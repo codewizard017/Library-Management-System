@@ -1,10 +1,12 @@
 import java.sql.*;
-
 public class Member {
 
     // Attributes
     private int memberId;
     private String name;
+    private String username;
+    private String password;
+    private Role role;
     private String email;
     private String phone;
     private int booksIssued;
@@ -31,6 +33,27 @@ public class Member {
         this.email = email;
         this.phone = phone;
         this.booksIssued = bookIssued; // Initially no books are issued
+    }
+
+    public Member( String email, int memberId, String name, String password, String phone, Role role, String username) {
+        this.booksIssued = 0;
+        this.email = email;
+        this.memberId = memberId;
+        this.name = name;
+        this.password = PasswordUtil.hashPassword(password);//SHA-256
+        this.phone = phone;
+        this.role = role;
+        this.username = username;
+    }
+
+    public Member(int booksIssued, String email, String name, String password, String phone, Role role, String username) {
+        this.booksIssued = booksIssued;
+        this.email = email;
+        this.name = name;
+        this.password = PasswordUtil.hashPassword(password);
+        this.phone = phone;
+        this.role = role;
+        this.username = username;
     }
 
 
@@ -79,18 +102,33 @@ public class Member {
         this.booksIssued = booksIssued; 
     }
 
-    public boolean saveToDatabase(Connection connection, Statement statement) {
-        String query = "INSERT INTO MEMBERS(NAME, EMAIL, PHONE, BOOKISSUED) VALUES ('" + this.name + "', '" + this.email + "', '" + this.phone + "', '" + this.booksIssued + "')";
-        System.out.println(query);
-        try {
+    public boolean saveToDatabase(Connection connection) {
 
-            ResultSet rs = statement.executeQuery(query);
-            return true;
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
+    String query = "INSERT INTO MEMBERS " +
+                   "(NAME, USERNAME, PASSWORD, ROLE, EMAIL, PHONE, BOOKISSUED) " +
+                   "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+        preparedStatement.setString(1, this.name);
+        preparedStatement.setString(2, this.username);
+        preparedStatement.setString(3, this.password);      // Already hashed
+        preparedStatement.setString(4, this.role.name());   // Enum to String
+        preparedStatement.setString(5, this.email);
+        preparedStatement.setString(6, this.phone);
+        preparedStatement.setInt(7, this.booksIssued);
+
+        
+        int rows = preparedStatement.executeUpdate();
+
+        return rows > 0;
+
+    } catch (SQLException e) {
+
+        System.out.println(e.getMessage());
+        return false;
     }
+}
 
     // Display Method
 

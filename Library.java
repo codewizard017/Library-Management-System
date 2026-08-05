@@ -28,7 +28,9 @@ public class Library {
         return true;
     }
 
-    public void viewAllBooks() {
+    public void viewAllBooks(Member m) {
+
+
         if (books.isEmpty()) {
             System.out.println("No books available.");
             return;
