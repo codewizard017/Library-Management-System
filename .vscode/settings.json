@@ -1,0 +1,6 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "c:\\Users\\LENOVO\\Downloads\\ojdbc17-23.26.3.0.0.jar"
+    ]
+}
