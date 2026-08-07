@@ -24,7 +24,7 @@ class MemberDao
 
             return new Member(
                     resultSet.getString("EMAIL"),
-                    resultSet.getInt("MEMBERID"),
+                    resultSet.getInt("MEMBER_ID"),
                     resultSet.getString("NAME"),
                     resultSet.getString("PASSWORD"),   // Already hashed
                     resultSet.getString("PHONE"),

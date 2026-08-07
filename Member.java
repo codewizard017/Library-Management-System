@@ -40,7 +40,7 @@ public class Member {
         this.email = email;
         this.memberId = memberId;
         this.name = name;
-        this.password = PasswordUtil.hashPassword(password);//SHA-256
+        this.password = password;//SHA-256
         this.phone = phone;
         this.role = role;
         this.username = username;

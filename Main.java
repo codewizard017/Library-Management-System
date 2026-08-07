@@ -47,13 +47,15 @@ public class Main {
             //  System.out.println("----------------------");
             //  }
             rs.close();
-            statement.close();
+            // statement.close();
             // connection.close();
 
         } catch (ClassNotFoundException e) {
             System.out.println("Driver not found!");
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            // System.out.println(e.getMessage());
+                        System.out.println("databse already exists. not created again");
+
         }
 
         try {
@@ -98,13 +100,15 @@ public class Main {
             //  System.out.println("----------------------");
             //  }
             rs.close();
-            statement.close();
+            // statement.close();
             // connection.close();
 
         } catch (ClassNotFoundException e) {
             System.out.println("Driver not found!");
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            // System.out.println(e.getMessage());
+                        System.out.println("databse already exists. not created again");
+
         }
 
         try {
@@ -152,13 +156,14 @@ public class Main {
             //  System.out.println("----------------------");
             //  }
             rs.close();
-            statement.close();
+            // statement.close();
             // connection.close();
 
         } catch (ClassNotFoundException e) {
             System.out.println("Driver not found!");
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            // System.out.println(e.getMessage());
+            System.out.println("databse already exists. not created again");
         }
 
         Scanner sc = new Scanner(System.in);
@@ -179,6 +184,7 @@ public class Main {
 
         if (member == null) {
             System.out.println("Invalid Username or Password");
+            return;
         } else {
             System.out.println("Login Successful");
             System.out.println("Welcome " + member.getName());
