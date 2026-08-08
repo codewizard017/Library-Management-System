@@ -82,6 +82,7 @@ public class Main {
                     + "PHONE VARCHAR2(10) NOT NULL,\n"
                     + "BOOKISSUED NUMBER(2) DEFAULT 0,\n"
                     + "CONSTRAINT PK_MEMBERS PRIMARY KEY (MEMBER_ID),\n"
+                    + "CONSTRAINT UK_MEMBER_USERNAME UNIQUE (USERNAME),\n"
                     + "CONSTRAINT UK_MEMBER_EMAIL UNIQUE (EMAIL),\n"
                     + "CONSTRAINT UK_MEMBER_PHONE UNIQUE (PHONE))";
 
@@ -394,7 +395,7 @@ public class Main {
                                 System.out.print("Role : ");
                                 String role = sc.nextLine();
 
-                                Member member2 = new Member(email, memberId, name, password2, phone,
+                                Member member2 = new Member(0, email, name, password2, phone,
                                         role.toUpperCase().equals("ADMIN") ? Role.ADMIN
                                                 : role.toUpperCase().equals("LIBRARIAN") ? Role.LIBRARIAN
                                                         : Role.STUDENT,
