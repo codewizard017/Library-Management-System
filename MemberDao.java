@@ -6,7 +6,7 @@ class MemberDao
 
     if(username.equalsIgnoreCase("admin") && password.equalsIgnoreCase("admin"))
     {
-        return new Member("admin","admin","admin");
+        return new Member("admin", 0, "admin","admin","admin", Role.ADMIN, "admin");
     }
     String query = "SELECT * FROM MEMBERS WHERE USERNAME = ? AND PASSWORD = ?";
 

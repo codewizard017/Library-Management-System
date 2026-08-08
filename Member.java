@@ -68,12 +68,20 @@ public class Member {
         return name;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
     public String getEmail() {
         return email;
     }
 
     public String getPhone() {
         return phone;
+    }
+
+    public Role getRole() {
+        return role;
     }
 
     public int getBooksIssued() { 
