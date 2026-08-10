@@ -62,7 +62,7 @@ public class AdminMenu {
                     // } else {
                     // System.out.println("Book ID Already Exists.");
                     // }
-                    boolean result = BookDao.saveToDatabase(book, connection, statement);
+                    boolean result = BookDao.saveToDatabase(book, connection, statement, currentUser);
                     System.out.println(result);
                     break;
                 }
@@ -75,7 +75,7 @@ public class AdminMenu {
                     // } else {
                     // System.out.println("Book Not Found.");
                     // }
-                    boolean result = BookDao.removeBook(bookId, connection, statement);
+                    boolean result = BookDao.removeBook(bookId, connection, statement, currentUser);
 
                     if (result) {
                         System.out.println("Book Removed Successfully. ");
@@ -207,7 +207,7 @@ public class AdminMenu {
                                 // } else {
                                 // System.out.println("Member ID Already Exists.");
                                 // }
-                                member2.saveToDatabase(connection);
+                                member2.saveToDatabase(connection, currentUser);
                                 break;
                             }
 
@@ -238,7 +238,7 @@ public class AdminMenu {
                                 System.out.print("Enter Member ID : ");
                                 int memberId = sc.nextInt();
                                 // library.viewBorrowedBooks(memberId);
-                                TransactionDao.viewBorrowedBooks(memberId, connection, statement);
+                                TransactionDao.viewBorrowedBooks(memberId, connection, statement, currentUser);
                                 break;
                             }
 
@@ -246,7 +246,7 @@ public class AdminMenu {
                                 System.out.println("Enter Member ID : ");
                                 int memberId = sc.nextInt();
                                 // library.viewBorrowHistory(memberId);
-                                TransactionDao.viewBorrowHistory(memberId, connection, statement);
+                                TransactionDao.viewBorrowHistory(memberId, connection, statement, currentUser);
                                 break;
                             }
 
@@ -254,7 +254,7 @@ public class AdminMenu {
                                 System.out.print("Enter Member ID : ");
                                 int memberId = sc.nextInt();
                                 // library.calculateFine(memberId);
-                                TransactionDao.calculateFine(memberId, connection, statement);
+                                TransactionDao.calculateFine(memberId, connection, statement, currentUser);
                                 break;
                             }
 
@@ -289,7 +289,8 @@ public class AdminMenu {
                             memberId,
                             issueDate,
                             connection,
-                            statement);
+                            statement,
+                            currentUser);
 
                     System.out.println(message);
 
@@ -310,7 +311,8 @@ public class AdminMenu {
                             bookId,
                             returnDate,
                             connection,
-                            statement);
+                            statement,
+                            currentUser);
 
                     System.out.println(message);
 

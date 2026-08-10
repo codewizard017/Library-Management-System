@@ -1,4 +1,5 @@
 import java.sql.*;
+
 public class Member {
 
     // Attributes
@@ -27,6 +28,7 @@ public class Member {
         this.phone = phone;
         this.booksIssued = 0; // Initially no books are issued
     }
+
     public Member(int memberId, String name, String email, String phone, int bookIssued) {
         this.memberId = memberId;
         this.name = name;
@@ -35,18 +37,19 @@ public class Member {
         this.booksIssued = bookIssued; // Initially no books are issued
     }
 
-    public Member( String email, int memberId, String name, String password, String phone, Role role, String username) {
+    public Member(String email, int memberId, String name, String password, String phone, Role role, String username) {
         this.booksIssued = 0;
         this.email = email;
         this.memberId = memberId;
         this.name = name;
-        this.password = password;//SHA-256
+        this.password = password;// SHA-256
         this.phone = phone;
         this.role = role;
         this.username = username;
     }
 
-    public Member(int booksIssued, String email, String name, String password, String phone, Role role, String username) {
+    public Member(int booksIssued, String email, String name, String password, String phone, Role role,
+            String username) {
         this.booksIssued = booksIssued;
         this.email = email;
         this.name = name;
@@ -55,8 +58,6 @@ public class Member {
         this.role = role;
         this.username = username;
     }
-
-
 
     // Getters
 
@@ -84,8 +85,8 @@ public class Member {
         return role;
     }
 
-    public int getBooksIssued() { 
-        return booksIssued; 
+    public int getBooksIssued() {
+        return booksIssued;
     }
 
     // Setters
@@ -106,37 +107,42 @@ public class Member {
         this.phone = phone;
     }
 
-    public void setBooksIssued(int booksIssued) { 
-        this.booksIssued = booksIssued; 
+    public void setBooksIssued(int booksIssued) {
+        this.booksIssued = booksIssued;
     }
 
-    public boolean saveToDatabase(Connection connection) {
+    public boolean saveToDatabase(Connection connection, Member currentUser) {
 
-    String query = "INSERT INTO MEMBERS " +
-                   "(NAME, USERNAME, PASSWORD, ROLE, EMAIL, PHONE, BOOKISSUED) " +
-                   "VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-
-        preparedStatement.setString(1, this.name);
-        preparedStatement.setString(2, this.username);
-        preparedStatement.setString(3, this.password);      // Already hashed
-        preparedStatement.setString(4, this.role.name());   // Enum to String
-        preparedStatement.setString(5, this.email);
-        preparedStatement.setString(6, this.phone);
-        preparedStatement.setInt(7, this.booksIssued);
+        if (currentUser.getRole() != Role.ADMIN) {
+            System.out.println("Not allowed to access this method.");
+            return false;
+        }
 
         
-        int rows = preparedStatement.executeUpdate();
+        String query = "INSERT INTO MEMBERS " +
+                "(NAME, USERNAME, PASSWORD, ROLE, EMAIL, PHONE, BOOKISSUED) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-        return rows > 0;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-    } catch (SQLException e) {
+            preparedStatement.setString(1, this.name);
+            preparedStatement.setString(2, this.username);
+            preparedStatement.setString(3, this.password); // Already hashed
+            preparedStatement.setString(4, this.role.name()); // Enum to String
+            preparedStatement.setString(5, this.email);
+            preparedStatement.setString(6, this.phone);
+            preparedStatement.setInt(7, this.booksIssued);
 
-        System.out.println(e.getMessage());
-        return false;
+            int rows = preparedStatement.executeUpdate();
+
+            return rows > 0;
+
+        } catch (SQLException e) {
+
+            System.out.println(e.getMessage());
+            return false;
+        }
     }
-}
 
     // Display Method
 

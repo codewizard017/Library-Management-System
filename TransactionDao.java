@@ -51,7 +51,12 @@ public class TransactionDao {
         }
     }
 
-    public static String issueBook(int bookId, int memberId, LocalDate issueDate, Connection connection, Statement statement) {
+    public static String issueBook(int bookId, int memberId, LocalDate issueDate, Connection connection,
+            Statement statement, Member currentUser) {
+
+        if (currentUser.getRole() != Role.ADMIN && currentUser.getRole() != Role.LIBRARIAN) {
+            return "Not allowed to access this method.";
+        }
 
         try {
             connection.setAutoCommit(false);
@@ -81,7 +86,8 @@ public class TransactionDao {
                 return "Member has reached borrowing limit.";
             }
 
-            query = "INSERT INTO TRANSACTIONS(BOOK_ID, MEMBER_ID, ISSUE_DATE, RETURNED) VALUES(" + bookId + "," + memberId + "," + "DATE '" + issueDate + "'," + "'N')";
+            query = "INSERT INTO TRANSACTIONS(BOOK_ID, MEMBER_ID, ISSUE_DATE, RETURNED) VALUES(" + bookId + ","
+                    + memberId + "," + "DATE '" + issueDate + "'," + "'N')";
 
             statement.executeUpdate(query);
 
@@ -114,7 +120,12 @@ public class TransactionDao {
         }
     }
 
-    public static String returnBook(int bookId, LocalDate returnDate, Connection connection, Statement statement) {
+    public static String returnBook(int bookId, LocalDate returnDate, Connection connection, Statement statement,
+            Member currentUser) {
+
+        if (currentUser.getRole() != Role.ADMIN && currentUser.getRole() != Role.LIBRARIAN) {
+            return "Not allowed to access this method.";
+        }
 
         try {
             connection.setAutoCommit(false);
@@ -144,7 +155,8 @@ public class TransactionDao {
             int memberId = rs.getInt("MEMBER_ID");
 
             // Update Transaction
-            query = "UPDATE TRANSACTIONS SET RETURN_DATE = DATE '" + returnDate + "', RETURNED = 'Y' WHERE TRANSACTION_ID = " + rs.getInt("TRANSACTION_ID");
+            query = "UPDATE TRANSACTIONS SET RETURN_DATE = DATE '" + returnDate
+                    + "', RETURNED = 'Y' WHERE TRANSACTION_ID = " + rs.getInt("TRANSACTION_ID");
             // System.out.println(query);
             statement.executeUpdate(query);
 
@@ -183,11 +195,19 @@ public class TransactionDao {
         }
     }
 
-    public static boolean viewBorrowedBooks(int memberId, Connection connection, Statement statement) {
+    public static boolean viewBorrowedBooks(int memberId, Connection connection, Statement statement,
+            Member currentUser) {
 
-        String query = "SELECT B.BOOK_ID, B.TITLE, B.AUTHOR, B.ISBN, B.CATEGORY, B.PUBLICATION_YEAR, B.SHELF_LOCATION, B.STATUS FROM BOOKS B, TRANSACTIONS T WHERE B.BOOK_ID = T.BOOK_ID AND T.MEMBER_ID = " + memberId + " AND T.RETURNED = 'N'";
+        if (currentUser.getRole() == Role.STUDENT && currentUser.getMemberId() != memberId) {
+            System.out.println("You can only view your own borrowed books.");
+            return false;
+        }
+
+        String query = "SELECT B.BOOK_ID, B.TITLE, B.AUTHOR, B.ISBN, B.CATEGORY, B.PUBLICATION_YEAR, B.SHELF_LOCATION, B.STATUS FROM BOOKS B, TRANSACTIONS T WHERE B.BOOK_ID = T.BOOK_ID AND T.MEMBER_ID = "
+                + memberId + " AND T.RETURNED = 'N'";
 
         // System.out.println(query);
+
         try {
             ResultSet rs = statement.executeQuery(query);
             boolean found = false;
@@ -216,9 +236,16 @@ public class TransactionDao {
         }
     }
 
-    public static boolean viewBorrowHistory(int memberId, Connection connection, Statement statement) {
+    public static boolean viewBorrowHistory(int memberId, Connection connection, Statement statement,
+            Member currentUser) {
 
-        String query = "SELECT B.TITLE, T.ISSUE_DATE, T.RETURN_DATE, T.RETURNED FROM BOOKS B, TRANSACTIONS T WHERE B.BOOK_ID = T.BOOK_ID AND T.MEMBER_ID = " + memberId;
+        if (currentUser.getRole() == Role.STUDENT && currentUser.getMemberId() != memberId) {
+            System.out.println("You can only view your own borrow history.");
+            return false;
+        }
+
+        String query = "SELECT B.TITLE, T.ISSUE_DATE, T.RETURN_DATE, T.RETURNED FROM BOOKS B, TRANSACTIONS T WHERE B.BOOK_ID = T.BOOK_ID AND T.MEMBER_ID = "
+                + memberId;
         // System.out.println(query);
 
         try {
@@ -257,9 +284,15 @@ public class TransactionDao {
         }
     }
 
-    public static boolean calculateFine(int memberId, Connection connection, Statement statement) {
+    public static boolean calculateFine(int memberId, Connection connection, Statement statement, Member currentUser) {
 
-        String query = "SELECT B.TITLE, T.ISSUE_DATE, T.RETURN_DATE FROM BOOKS B, TRANSACTIONS T WHERE B.BOOK_ID = T.BOOK_ID AND T.MEMBER_ID = " + memberId + " AND T.RETURNED = 'Y'";
+        if (currentUser.getRole() == Role.STUDENT && currentUser.getMemberId() != memberId) {
+            System.out.println("You can only view your own fine details.");
+            return false;
+        }
+
+        String query = "SELECT B.TITLE, T.ISSUE_DATE, T.RETURN_DATE FROM BOOKS B, TRANSACTIONS T WHERE B.BOOK_ID = T.BOOK_ID AND T.MEMBER_ID = "
+                + memberId + " AND T.RETURNED = 'Y'";
         // System.out.println(query);
 
         try {

@@ -4,9 +4,17 @@ import java.util.ArrayList;
 
 public class BookDao {
 
-    public static boolean saveToDatabase(Book book, Connection connection, Statement statement) {
-        String query = "INSERT INTO BOOKS(TITLE, AUTHOR, ISBN, CATEGORY, PUBLICATION_YEAR, SHELF_LOCATION, STATUS) VALUES ('" + book.title + "', '" + book.author + "', '" + book.isbn + "', '" + book.category + "'," + book.publicationYear + ", '" + book.shelfLocation + "', '" + BookStatus.AVAILABLE + "')";
-        System.out.println(query);
+    public static boolean saveToDatabase(Book book, Connection connection, Statement statement, Member currentUser) {
+
+        if (currentUser.getRole() != Role.ADMIN) {
+            System.out.println("Not allowed to access this method.");
+            return false;
+        }
+
+        String query = "INSERT INTO BOOKS(TITLE, AUTHOR, ISBN, CATEGORY, PUBLICATION_YEAR, SHELF_LOCATION, STATUS) VALUES ('"
+                + book.title + "', '" + book.author + "', '" + book.isbn + "', '" + book.category + "',"
+                + book.publicationYear + ", '" + book.shelfLocation + "', '" + BookStatus.AVAILABLE + "')";
+        // System.out.println(query);
         try {
 
             ResultSet rs = statement.executeQuery(query);
@@ -35,7 +43,8 @@ public class BookDao {
                 String status = rs.getString("status");
                 // int bookissued = rs.getInt("bookissued");
 
-                System.out.printf("%d %s %s %s %s %d %s %s\n", id, title, author, isbn, category, publicationyr, shelflocation, status);
+                System.out.printf("%d %s %s %s %s %d %s %s\n", id, title, author, isbn, category, publicationyr,
+                        shelflocation, status);
             }
             return true;
         } catch (Exception e) {
@@ -44,9 +53,15 @@ public class BookDao {
         }
     }
 
-    public static boolean removeBook(int bookId, Connection connection, Statement statement) {
+    public static boolean removeBook(int bookId, Connection connection, Statement statement, Member currentUser) {
+
+        if (currentUser.getRole() != Role.ADMIN) {
+            System.out.println("Not allowed to access this method.");
+            return false;
+        }
+
         String query = "DELETE FROM BOOKS WHERE BOOK_ID = " + bookId;
-        System.out.println(query);
+        //System.out.println(query);
 
         try {
             int rows = statement.executeUpdate(query);
@@ -86,8 +101,7 @@ public class BookDao {
                         isbn,
                         category,
                         publicationYear,
-                        shelfLocation
-                );
+                        shelfLocation);
 
                 String status = rs.getString("STATUS");
 
@@ -129,8 +143,7 @@ public class BookDao {
                         rs.getString("ISBN"),
                         rs.getString("CATEGORY"),
                         rs.getInt("PUBLICATION_YEAR"),
-                        rs.getString("SHELF_LOCATION")
-                );
+                        rs.getString("SHELF_LOCATION"));
 
                 if (rs.getString("STATUS").equals("ISSUED")) {
                     book.setStatus(BookStatus.ISSUED);
@@ -169,8 +182,7 @@ public class BookDao {
                         rs.getString("ISBN"),
                         rs.getString("CATEGORY"),
                         rs.getInt("PUBLICATION_YEAR"),
-                        rs.getString("SHELF_LOCATION")
-                );
+                        rs.getString("SHELF_LOCATION"));
 
                 if (rs.getString("STATUS").equals("ISSUED")) {
                     book.setStatus(BookStatus.ISSUED);
@@ -209,8 +221,7 @@ public class BookDao {
                         rs.getString("ISBN"),
                         rs.getString("CATEGORY"),
                         rs.getInt("PUBLICATION_YEAR"),
-                        rs.getString("SHELF_LOCATION")
-                );
+                        rs.getString("SHELF_LOCATION"));
 
                 if (rs.getString("STATUS").equals("ISSUED")) {
                     book.setStatus(BookStatus.ISSUED);
@@ -249,8 +260,7 @@ public class BookDao {
                         rs.getString("ISBN"),
                         rs.getString("CATEGORY"),
                         rs.getInt("PUBLICATION_YEAR"),
-                        rs.getString("SHELF_LOCATION")
-                );
+                        rs.getString("SHELF_LOCATION"));
 
                 if (rs.getString("STATUS").equals("ISSUED")) {
                     book.setStatus(BookStatus.ISSUED);

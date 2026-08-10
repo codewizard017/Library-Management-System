@@ -148,7 +148,8 @@ public class StudentMenu {
                     TransactionDao.viewBorrowedBooks(
                             currentUser.getMemberId(),
                             connection,
-                            statement);
+                            statement,
+                            currentUser);
 
                     break;
                 }
@@ -158,7 +159,8 @@ public class StudentMenu {
                     TransactionDao.viewBorrowHistory(
                             currentUser.getMemberId(),
                             connection,
-                            statement);
+                            statement,
+                            currentUser);
 
                     break;
                 }
@@ -168,7 +170,8 @@ public class StudentMenu {
                     TransactionDao.calculateFine(
                             currentUser.getMemberId(),
                             connection,
-                            statement);
+                            statement,
+                            currentUser);
 
                     break;
                 }

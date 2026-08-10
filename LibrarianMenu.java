@@ -147,7 +147,8 @@ public class LibrarianMenu {
                             memberId,
                             issueDate,
                             connection,
-                            statement);
+                            statement,
+                            currentUser);
 
                     System.out.println(message);
 
@@ -166,7 +167,8 @@ public class LibrarianMenu {
                             bookId,
                             returnDate,
                             connection,
-                            statement);
+                            statement,
+                            currentUser);
 
                     System.out.println(message);
 
