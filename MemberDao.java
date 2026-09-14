@@ -1,6 +1,7 @@
 import java.sql.*;
+import java.util.ArrayList;
 
-class MemberDao {
+public class MemberDao {
 
     public Member login(String username, String password, Connection connection) {
 
@@ -53,45 +54,58 @@ class MemberDao {
 
         return null;
     }
+
+    public static ArrayList<Member> getAllMembers(Connection connection) {
+        ArrayList<Member> members = new ArrayList<>();
+        String query = "SELECT MEMBER_ID, NAME, USERNAME, EMAIL, PHONE, ROLE, BOOKISSUED FROM MEMBERS ORDER BY MEMBER_ID";
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(query)) {
+            while (rs.next()) {
+                Role role = Role.STUDENT;
+                try {
+                    role = Role.valueOf(rs.getString("ROLE"));
+                } catch (Exception ignored) {}
+                Member m = new Member(
+                        rs.getInt("MEMBER_ID"),
+                        rs.getString("NAME"),
+                        rs.getString("USERNAME"),
+                        rs.getString("EMAIL"),
+                        rs.getString("PHONE"),
+                        role,
+                        rs.getInt("BOOKISSUED")
+                );
+                members.add(m);
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching members: " + e.getMessage());
+        }
+        return members;
+    }
+
+    public static boolean deleteMember(int memberId, Connection connection, Member currentUser) {
+        if (currentUser.getRole() != Role.ADMIN) {
+            return false;
+        }
+        String query = "DELETE FROM MEMBERS WHERE MEMBER_ID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, memberId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Error deleting member: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static int countMembers(Connection connection) {
+        String query = "SELECT COUNT(*) FROM MEMBERS";
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(query)) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            System.err.println("Error counting members: " + e.getMessage());
+        }
+        return 0;
+    }
 }
-
-
-// import java.sql.*;
-
-// class MemberDao {
-
-//     public Member login(String username, String password, Connection connection) {
-
-//         String query = "SELECT * FROM MEMBERS WHERE USERNAME = '"
-//                 + username
-//                 + "' AND PASSWORD = '"
-//                 + password
-//                 + "'";
-
-//         System.out.println("SQL SENT TO DATABASE:");
-//         System.out.println(query);
-
-//         try {
-//             Statement statement = connection.createStatement();
-//             ResultSet resultSet = statement.executeQuery(query);
-
-//             if (resultSet.next()) {
-//                 System.out.println("LOGIN SUCCESSFUL");
-//                 return new Member(
-//                         resultSet.getString("EMAIL"),
-//                         resultSet.getInt("MEMBER_ID"),
-//                         resultSet.getString("NAME"),
-//                         resultSet.getString("PASSWORD"),
-//                         resultSet.getString("PHONE"),
-//                         Role.valueOf(resultSet.getString("ROLE")),
-//                         resultSet.getString("USERNAME")
-//                 );
-//             }
-
-//         } catch (SQLException | IllegalArgumentException e) {
-//             e.printStackTrace();
-//         }
-
-//         return null;
-//     }
-// }

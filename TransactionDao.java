@@ -326,4 +326,132 @@ public class TransactionDao {
             return false;
         }
     }
+
+    public static java.util.ArrayList<TransactionRecord> getAllTransactionRecords(Connection connection) {
+        java.util.ArrayList<TransactionRecord> list = new java.util.ArrayList<>();
+        String query = "SELECT T.TRANSACTION_ID, T.BOOK_ID, NVL(B.TITLE, 'Unknown Book') AS TITLE, "
+                + "T.MEMBER_ID, NVL(M.NAME, 'Unknown Member') AS MEMBER_NAME, "
+                + "T.ISSUE_DATE, T.RETURN_DATE, T.RETURNED "
+                + "FROM TRANSACTIONS T "
+                + "LEFT JOIN BOOKS B ON T.BOOK_ID = B.BOOK_ID "
+                + "LEFT JOIN MEMBERS M ON T.MEMBER_ID = M.MEMBER_ID "
+                + "ORDER BY T.TRANSACTION_ID DESC";
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(query)) {
+            while (rs.next()) {
+                int transId = rs.getInt("TRANSACTION_ID");
+                int bookId = rs.getInt("BOOK_ID");
+                String title = rs.getString("TITLE");
+                int memberId = rs.getInt("MEMBER_ID");
+                String memberName = rs.getString("MEMBER_NAME");
+                Date issueSql = rs.getDate("ISSUE_DATE");
+                Date returnSql = rs.getDate("RETURN_DATE");
+                String ret = rs.getString("RETURNED");
+                boolean returned = "Y".equalsIgnoreCase(ret);
+
+                LocalDate issueDate = issueSql != null ? issueSql.toLocalDate() : LocalDate.now();
+                LocalDate returnDate = returnSql != null ? returnSql.toLocalDate() : null;
+
+                long days = 0;
+                if (returned && returnDate != null) {
+                    days = ChronoUnit.DAYS.between(issueDate, returnDate);
+                } else {
+                    days = ChronoUnit.DAYS.between(issueDate, LocalDate.now());
+                }
+                if (days < 0) days = 0;
+                long fine = days > 14 ? (days - 14) * 5 : 0;
+
+                list.add(new TransactionRecord(transId, bookId, title, memberId, memberName, issueDate, returnDate, returned, fine, days));
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching transaction records: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public static java.util.ArrayList<Book> getMemberBorrowedBooks(int memberId, Connection connection) {
+        java.util.ArrayList<Book> list = new java.util.ArrayList<>();
+        String query = "SELECT B.BOOK_ID, B.TITLE, B.AUTHOR, B.ISBN, B.CATEGORY, B.PUBLICATION_YEAR, B.SHELF_LOCATION, B.STATUS "
+                + "FROM BOOKS B JOIN TRANSACTIONS T ON B.BOOK_ID = T.BOOK_ID "
+                + "WHERE T.MEMBER_ID = ? AND T.RETURNED = 'N' ORDER BY B.BOOK_ID";
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Book b = new Book(
+                            rs.getInt("BOOK_ID"),
+                            rs.getString("TITLE"),
+                            rs.getString("AUTHOR"),
+                            rs.getString("ISBN"),
+                            rs.getString("CATEGORY"),
+                            rs.getInt("PUBLICATION_YEAR"),
+                            rs.getString("SHELF_LOCATION")
+                    );
+                    b.setStatus(BookStatus.ISSUED);
+                    list.add(b);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching member borrowed books: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public static java.util.ArrayList<TransactionRecord> getMemberBorrowHistory(int memberId, Connection connection) {
+        java.util.ArrayList<TransactionRecord> list = new java.util.ArrayList<>();
+        String query = "SELECT T.TRANSACTION_ID, T.BOOK_ID, NVL(B.TITLE, 'Unknown Book') AS TITLE, "
+                + "T.MEMBER_ID, NVL(M.NAME, 'Unknown Member') AS MEMBER_NAME, "
+                + "T.ISSUE_DATE, T.RETURN_DATE, T.RETURNED "
+                + "FROM TRANSACTIONS T "
+                + "LEFT JOIN BOOKS B ON T.BOOK_ID = B.BOOK_ID "
+                + "LEFT JOIN MEMBERS M ON T.MEMBER_ID = M.MEMBER_ID "
+                + "WHERE T.MEMBER_ID = ? "
+                + "ORDER BY T.TRANSACTION_ID DESC";
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int transId = rs.getInt("TRANSACTION_ID");
+                    int bookId = rs.getInt("BOOK_ID");
+                    String title = rs.getString("TITLE");
+                    int mId = rs.getInt("MEMBER_ID");
+                    String memberName = rs.getString("MEMBER_NAME");
+                    Date issueSql = rs.getDate("ISSUE_DATE");
+                    Date returnSql = rs.getDate("RETURN_DATE");
+                    String ret = rs.getString("RETURNED");
+                    boolean returned = "Y".equalsIgnoreCase(ret);
+
+                    LocalDate issueDate = issueSql != null ? issueSql.toLocalDate() : LocalDate.now();
+                    LocalDate returnDate = returnSql != null ? returnSql.toLocalDate() : null;
+
+                    long days = 0;
+                    if (returned && returnDate != null) {
+                        days = ChronoUnit.DAYS.between(issueDate, returnDate);
+                    } else {
+                        days = ChronoUnit.DAYS.between(issueDate, LocalDate.now());
+                    }
+                    if (days < 0) days = 0;
+                    long fine = days > 14 ? (days - 14) * 5 : 0;
+
+                    list.add(new TransactionRecord(transId, bookId, title, mId, memberName, issueDate, returnDate, returned, fine, days));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching member history: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public static int countActiveLoans(Connection connection) {
+        String query = "SELECT COUNT(*) FROM TRANSACTIONS WHERE RETURNED = 'N'";
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(query)) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            System.err.println("Error counting active loans: " + e.getMessage());
+        }
+        return 0;
+    }
 }

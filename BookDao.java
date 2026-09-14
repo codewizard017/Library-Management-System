@@ -326,4 +326,72 @@ public class BookDao {
         return 0;
     }
 
+    public static ArrayList<Book> getAllBooks(Connection connection) {
+        ArrayList<Book> books = new ArrayList<>();
+        String query = "SELECT BOOK_ID, TITLE, AUTHOR, ISBN, CATEGORY, PUBLICATION_YEAR, SHELF_LOCATION, STATUS FROM BOOKS ORDER BY BOOK_ID";
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(query)) {
+            while (rs.next()) {
+                Book book = new Book(
+                        rs.getInt("BOOK_ID"),
+                        rs.getString("TITLE"),
+                        rs.getString("AUTHOR"),
+                        rs.getString("ISBN"),
+                        rs.getString("CATEGORY"),
+                        rs.getInt("PUBLICATION_YEAR"),
+                        rs.getString("SHELF_LOCATION"));
+                if ("ISSUED".equalsIgnoreCase(rs.getString("STATUS"))) {
+                    book.setStatus(BookStatus.ISSUED);
+                } else {
+                    book.setStatus(BookStatus.AVAILABLE);
+                }
+                books.add(book);
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching all books: " + e.getMessage());
+        }
+        return books;
+    }
+
+    public static boolean saveBookPreparedStatement(Book book, Connection connection, Member currentUser) {
+        if (currentUser.getRole() != Role.ADMIN) {
+            return false;
+        }
+        String query = "INSERT INTO BOOKS(TITLE, AUTHOR, ISBN, CATEGORY, PUBLICATION_YEAR, SHELF_LOCATION, STATUS) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, book.getTitle());
+            ps.setString(2, book.getAuthor());
+            ps.setString(3, book.getIsbn());
+            ps.setString(4, book.getCategory());
+            ps.setInt(5, book.getPublicationYear());
+            ps.setString(6, book.getShelfLocation());
+            ps.setString(7, book.getStatus() == null ? BookStatus.AVAILABLE.name() : book.getStatus().name());
+            int rows = ps.executeUpdate();
+            return rows > 0;
+        } catch (Exception e) {
+            System.err.println("Error saving book: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean updateBook(Book book, Connection connection, Member currentUser) {
+        if (currentUser.getRole() != Role.ADMIN) {
+            return false;
+        }
+        String query = "UPDATE BOOKS SET TITLE = ?, AUTHOR = ?, ISBN = ?, CATEGORY = ?, PUBLICATION_YEAR = ?, SHELF_LOCATION = ? WHERE BOOK_ID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, book.getTitle());
+            ps.setString(2, book.getAuthor());
+            ps.setString(3, book.getIsbn());
+            ps.setString(4, book.getCategory());
+            ps.setInt(5, book.getPublicationYear());
+            ps.setString(6, book.getShelfLocation());
+            ps.setInt(7, book.getBookId());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Error updating book: " + e.getMessage());
+            return false;
+        }
+    }
+
 }

@@ -59,6 +59,16 @@ public class Member {
         this.username = username;
     }
 
+    public Member(int memberId, String name, String username, String email, String phone, Role role, int booksIssued) {
+        this.memberId = memberId;
+        this.name = name;
+        this.username = username;
+        this.email = email;
+        this.phone = phone;
+        this.role = role;
+        this.booksIssued = booksIssued;
+    }
+
     // Getters
 
     public int getMemberId() {
